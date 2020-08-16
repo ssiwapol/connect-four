@@ -10,7 +10,8 @@ class ConnectFour{
     final String p1Char = "X";
     final String p2Char = "O";
     private int[][] gridMain = new int[gridHeight][gridWidth];
-    private int[][] gridTest = new int[gridHeight][gridWidth];
+    private int[][] gridTest1 = new int[gridHeight][gridWidth];
+    private int[][] gridTest2 = new int[gridHeight][gridWidth];
     private int turn = 1;
     private int move = 0;
     private int mode = 0;
@@ -136,11 +137,11 @@ class ConnectFour{
         // check column that can defeat competitor
         ArrayList<Integer> colListToWin = new ArrayList<Integer>();
         for (int j=0; j<colListValid.size(); j++){
-            gridCopy();
-            if (isValid(j, gridTest)){
-                putDisc(j, 2, gridTest);
-                if (isWin(2, gridTest)){
-                    colListToWin.add(j);
+            gridCopy(gridMain, gridTest1);
+            if (isValid(colListValid.get(j), gridTest1)){
+                putDisc(colListValid.get(j), 2, gridTest1);
+                if (isWin(2, gridTest1)){
+                    colListToWin.add(colListValid.get(j));
                 }
             }
         }
@@ -148,26 +149,42 @@ class ConnectFour{
         // check column that can be defeated
         ArrayList<Integer> colListToDefend = new ArrayList<Integer>();
         for (int j=0; j<colListValid.size(); j++){
-            gridCopy();
-            if (isValid(j, gridTest)){
-                putDisc(j, 1, gridTest);
-                if (isWin(1, gridTest)){
-                    colListToDefend.add(j);
+            gridCopy(gridMain, gridTest1);
+            if (isValid(colListValid.get(j), gridTest1)){
+                putDisc(colListValid.get(j), 1, gridTest1);
+                if (isWin(1, gridTest1)){
+                    colListToDefend.add(colListValid.get(j));
                 }
             }
         }
 
-        // computer level2 check validate and winning column
-        if (lv==2){
-            if (colListToWin.size()>0){
-                col = colListToWin.get(new Random().nextInt(colListToWin.size()));
-            }
-            else{
-                col = colListValid.get(new Random().nextInt(colListValid.size()));
+        // check column that can be defeated after put the disc
+        TreeSet<Integer> colSetFoolProof = new TreeSet<Integer>();
+        for (int j=0; j<colListValid.size(); j++){
+            gridCopy(gridMain, gridTest1);
+            if (isValid(colListValid.get(j), gridTest1)){
+                putDisc(colListValid.get(j), 2, gridTest1);
+                for (int k=0; k<colListValid.size(); k++){
+                    gridCopy(gridTest1, gridTest2);
+                    if (isValid(colListValid.get(k), gridTest2)){
+                        putDisc(colListValid.get(k), 1, gridTest2);
+                        if (isWin(1, gridTest2)){
+                            colSetFoolProof.add(colListValid.get(j));
+                        }
+                    }
+                }
             }
         }
-        // computer level3 check validate, winning and defensive column
-        else if (lv==3){
+        ArrayList<Integer> colListFoolProof = new ArrayList<Integer>();
+        for (int j=0; j<colListValid.size(); j++){
+            if (!colSetFoolProof.contains(colListValid.get(j))){
+                colListFoolProof.add(colListValid.get(j));
+            }
+        }
+        
+
+        // computer level2 check winning, defensive and valid column respectively
+        if (lv==2){
             if (colListToWin.size()>0){
                 col = colListToWin.get(new Random().nextInt(colListToWin.size()));
             }
@@ -178,19 +195,36 @@ class ConnectFour{
                 col = colListValid.get(new Random().nextInt(colListValid.size()));
             }
         }
-        // computer level1 check validate column
+        // computer level3 check winning, defensive and foolproof column respectively
+        else if (lv==3){
+            if (colListToWin.size()>0){
+                col = colListToWin.get(new Random().nextInt(colListToWin.size()));
+            }
+            else if (colListToDefend.size()>0){
+                col = colListToDefend.get(new Random().nextInt(colListToDefend.size()));
+            }
+            else{
+                col = colListFoolProof.get(new Random().nextInt(colListFoolProof.size()));
+            }
+        }
+        // computer level1 check winning and valid column respectively
         else{
-            col = colListValid.get(new Random().nextInt(colListValid.size()));
+            if (colListToWin.size()>0){
+                col = colListToWin.get(new Random().nextInt(colListToWin.size()));
+            }
+            else{
+                col = colListValid.get(new Random().nextInt(colListValid.size()));
+            }
         }
 
         return col;
     }
 
     // copy main grid to test grid
-    private void gridCopy(){
-        for(int i=0; i<gridMain.length; i++){
-            for(int j=0; j<gridMain[i].length; j++){
-                gridTest[i][j]=gridMain[i][j];
+    private void gridCopy(int[][] g1, int[][] g2){
+        for(int i=0; i<g1.length; i++){
+            for(int j=0; j<g1[i].length; j++){
+                g2[i][j]=g1[i][j];
             }
         }
     }
@@ -228,7 +262,7 @@ class ConnectFour{
 
         // for loop inside grid
         for(int i=0; i<g.length; i++){
-            for(int j=0; j<g.length; j++){
+            for(int j=0; j<g[i].length; j++){
                 cntHorizontal = 0;
                 cntVertical = 0;
                 cntDiagonalUp = 0;
