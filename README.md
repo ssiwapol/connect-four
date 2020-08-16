@@ -5,7 +5,10 @@ The rule of the game is described in [Wikipedia](https://en.wikipedia.org/wiki/C
 
 ## Game Modes
 
-1. Single-player mode (Easy/Medium/Hard)
+1. Single-player mode
+    - Easy computer - check for winning and valid columns respectively
+    - Medium computer - check for winning, defensive and valid columns respectively
+    - Hard computer - check for winning, defensive and foolproof columns respectively
 2. Two-player mode
 
 ## Run the Game
